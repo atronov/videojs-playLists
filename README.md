@@ -55,6 +55,10 @@ VideoJS receives a `next()` function which put in place the next video.
 
 VideoJS receives a `prev()` function which put in place the previous video.
 
+### Update play list
+
+Call `updatePlayList(videos)` function if something has been changed in the original list. Struncture of `videos` is same as in [initialization](#initialize-playlist).
+
 ### Events
 
 <table border="0" cellspacing="5" cellpadding="5">

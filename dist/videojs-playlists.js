@@ -1,8 +1,8 @@
 /*!
  * videojs-playlists - Playlists done right for Videojs
- * v0.1.1
+ * v0.2.0
  * 
- * copyright Antonio Laguna 2013
+ * copyright Antonio Laguna 2015
  * MIT License
 */
 //videojs-playlists.js
@@ -41,20 +41,61 @@ function playList(options,arg){
     player.posterImage = player.addChild("posterImage");
   };
 
-  player.pl._addVideos = function(videos){
-    for (var i = 0, length = videos.length; i < length; i++){
+   var compareSources = function (oneSrc, otherSrc) {
+    for (var i = 0; i<oneSrc.length; i++) {
+      for (var j=0; j<otherSrc.length; j++) {
+        if (oneSrc[i] && otherSrc[j] && oneSrc[i].src === otherSrc[j].src) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+  
+  player.pl._createVideoItem = function(video) {
+      var videoItem = Object.create(video);
       var aux = [];
-      for (var j = 0, len = videos[i].src.length; j < len; j++){
+      for (var j = 0, len = videoItem.src.length; j < len; j++){
         aux.push({
-          type : player.pl._guessVideoType(videos[i].src[j]),
-          src : videos[i].src[j]
+          type : player.pl._guessVideoType(videoItem.src[j]),
+          src : videoItem.src[j]
         });
       }
-      videos[i].src = aux;
-      player.pl.videos.push(videos[i]);
-    }
+      videoItem.src = aux;
+      return videoItem;
   };
 
+  player.pl._addVideos = function(videos){
+    for (var i = 0, length = videos.length; i < length; i++){
+      var videoItem = player.pl._createVideoItem(videos[i]);
+      player.pl.videos.push(videoItem);
+    }
+  };
+  
+  player.pl._updateVideos = function(newVideos) {
+    var currentVideo = player.pl.currentVideo;
+    // is current video in the new list?
+    var found = newVideos.some(function(video, ind) {
+      var videoItem = player.pl._createVideoItem(video);
+      if (compareSources(currentVideo.src, videoItem.src)) {
+        // if yes, set current index in it's index in new list
+        player.pl.current = ind;
+        return true;
+      } else {
+        return false;
+      }
+    });
+    if (!found) {
+        // if no, preserve old index
+        // just check out of range
+        if (player.pl.current >= newVideos.length) {
+          player.pl.current = newVideos.length - 1;
+        }
+    }
+    player.pl.videos = [];
+    player.pl._addVideos(newVideos);
+  };
+  
   player.pl._nextPrev = function(func){
     var comparison, addendum;
 
@@ -135,6 +176,11 @@ videojs.Player.prototype.next = function(){
 };
 videojs.Player.prototype.prev = function(){
   this.pl._nextPrev('prev');
+  return this;
+};
+
+videojs.Player.prototype.updatePlayList = function(newVideos){
+  this.pl._updateVideos(newVideos);
   return this;
 };
 
