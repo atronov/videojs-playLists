@@ -42,7 +42,7 @@ suite('videojs-playlists', function() {
       assert.equal(player.pl.current,index);
     });
     test('poster should match video poster',function(){
-      var poster = $('.vjs-poster').css('background-image').replace('url(','').replace(')','');
+      var poster = $('.vjs-poster').css('background-image').replace(/url\(|\)|\"|\'/g,'');
       assert.equal(poster,videos[index].poster);
     });
   });
