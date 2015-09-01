@@ -112,4 +112,35 @@ suite('videojs-playlists', function() {
       player.prev();
     });
   });
+  
+  suite("#loop", function() {
+    setup(function() {
+      index = 0;
+      player.pl.loop = true;
+    });
+    test("calling #next when the last is playng, the first will start", function(done) {
+      player.playList(videos.length - 1);
+      player.one('next',function(){
+        assert.equal(player.pl.current,0);
+        done();
+      });
+      player.next();
+    });
+    test("calling #prev when the first is playng, the last will start", function(done) {
+      player.playList(0);
+      player.one('prev',function(){
+        assert.equal(player.pl.current,videos.length-1);
+        done();
+      });
+      player.prev();
+    });
+    test("when the last has ended the first will go", function(done) {
+      player.playList(videos.length - 1);
+      player.one('next',function(){
+        assert.equal(player.pl.current,0);
+        done();
+      });
+      player.trigger("ended");
+    });
+  });
 });
